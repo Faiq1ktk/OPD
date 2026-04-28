@@ -54,7 +54,12 @@ const AUTO_PLAN_DEPENDENCIES = {
   },
   9: {
     Cost: ['Consider economical options'],
-    'Side Effects': ['Switch formulation if GI / other-side effects Reinforce daily medication schedule'],
+    'Side Effects': [
+      'Signs/symptoms of GI and other side effects',
+      'Reinforce daily medication schedule',
+      'Switch formulation if GI / other-side effects Reinforce daily medication schedule',
+      'Switch formulation if GI / other side-effects Reinforce daily medication schedule',
+    ],
     Forgetfulness: [
       'Pill organizer / phone alarm advised; caregiver educated',
       'Possible consequences of missing and suboptimal dose of antiplatelets explained',
@@ -103,6 +108,8 @@ const AUTO_PLAN_DEPENDENCIES = {
     Cost: ['Physical therapy referral'],
     Transport: ['Physical therapy referral'],
     'Access Issues': ['Physical therapy referral'],
+    'Transport / Access issues': ['Physical therapy referral'],
+    'Transport / Access Issues': ['Physical therapy referral'],
     Fatigue: ['Physical therapy referral'],
     Other: ['Physical therapy referral'],
   },
@@ -110,6 +117,8 @@ const AUTO_PLAN_DEPENDENCIES = {
     Cost: ['Occupational therapy referral'],
     Transport: ['Occupational therapy referral'],
     'Access Issues': ['Occupational therapy referral'],
+    'Transport / Access issues': ['Occupational therapy referral'],
+    'Transport / Access Issues': ['Occupational therapy referral'],
     Other: ['Occupational therapy referral'],
   },
   18: {
