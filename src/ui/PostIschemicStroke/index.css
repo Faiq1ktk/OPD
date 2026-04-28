@@ -1,0 +1,723 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Open+Sans:wght@500;600;700&display=swap');
+
+.post-ischemic-page {
+  --card-max-width: 1661px;
+  --card-bg: #ffffff;
+  --header-bg: #064f8d;
+  --header-row-bg: #d7e7ff;
+  --border-blue: #064f8d;
+  --title-color: #ffffff;
+  --head-text: #000000;
+  --risk-text: #111827;
+  --body-text: #374151;
+  --control-border: #767676;
+  --field-bg: #f3f5f7;
+  --field-border: rgba(0, 0, 0, 0.37);
+  --shadow: 0 0 12px 0 rgba(184, 184, 186, 0.53);
+
+  --cell-padding-y: 12px;
+  --cell-padding-x: 14px;
+
+  --risk-block-gap: 13.04px;
+  --mrs-gap: 6px;
+  --mrs-radio-text-gap: 10px;
+
+  --status-group-gap: 13px;
+  --status-radio-text-gap: 12px;
+
+  --checkbox-group-gap: 10px;
+  --plan-group-gap: 13px;
+
+  --checkbox-text-gap: 14px;
+
+  width: 100%;
+  min-height: 100vh;
+  overflow: visible;
+  background: #f4f5f7;
+  padding: 10px 10px 10px;
+}
+
+.post-ischemic-page .assessment-layout {
+  width: 100%;
+  max-width: calc(var(--card-max-width) + 24px);
+  min-height: 0;
+  margin: 0 auto;
+}
+
+.post-ischemic-page .assessment-form {
+  width: 100%;
+  min-height: 0;
+}
+
+.post-ischemic-page .assessment-card {
+  width: 100%;
+  max-width: var(--card-max-width);
+  min-height: 0;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border-radius: 4px 4px 0 0;
+  box-shadow: var(--shadow);
+  overflow: visible;
+}
+
+.post-ischemic-page .assessment-header {
+  width: 100%;
+  min-height: 49.99px;
+  background: var(--header-bg);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.post-ischemic-page .assessment-title {
+  margin: 0;
+  color: var(--title-color);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 1.1vw, 18px);
+  line-height: 20px;
+  letter-spacing: 0.1px;
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-ischemic-page .assessment-table-wrapper {
+  width: 100%;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.post-ischemic-page .assessment-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.post-ischemic-page .assessment-table thead tr {
+  background: var(--header-row-bg);
+}
+
+.post-ischemic-page .assessment-table th,
+.post-ischemic-page .assessment-table td {
+  border: 0.5px solid var(--border-blue);
+  vertical-align: top;
+  text-align: left;
+  padding: var(--cell-padding-y) var(--cell-padding-x);
+  background: #ffffff;
+}
+
+.post-ischemic-page .assessment-table th {
+  background: var(--header-row-bg);
+  min-height: 44.99px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.post-ischemic-page .assessment-table th:nth-child(1),
+.post-ischemic-page .assessment-table td:nth-child(1) {
+  width: 13%;
+}
+
+.post-ischemic-page .assessment-table th:nth-child(2),
+.post-ischemic-page .assessment-table td:nth-child(2) {
+  width: 19%;
+}
+
+.post-ischemic-page .assessment-table th:nth-child(3),
+.post-ischemic-page .assessment-table td:nth-child(3) {
+  width: 35.5%;
+}
+
+.post-ischemic-page .assessment-table th:nth-child(4),
+.post-ischemic-page .assessment-table td:nth-child(4) {
+  width: 32.5%;
+}
+
+.post-ischemic-page .table-head-text {
+  display: inline-block;
+  color: var(--head-text);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.post-ischemic-page .risk-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--risk-block-gap);
+  min-width: 0;
+}
+
+.post-ischemic-page .risk-title {
+  color: var(--risk-text);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 20px;
+  word-break: break-word;
+}
+
+.post-ischemic-page .required-asterisk {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.post-ischemic-page .mrs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mrs-gap);
+}
+
+.post-ischemic-page .mrs-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #6b7280;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.post-ischemic-page .mrs-grid.ant-radio-group {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  column-gap: 10px;
+  row-gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.post-ischemic-page .mrs-item.ant-radio-wrapper {
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mrs-radio-text-gap);
+  width: max-content;
+}
+
+.post-ischemic-page .option-text,
+.post-ischemic-page .mrs-value,
+.post-ischemic-page .inline-option-text {
+  color: #374151;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.post-ischemic-page .option-text {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.post-ischemic-page .mrs-value {
+  white-space: nowrap;
+}
+
+.post-ischemic-page .ant-radio-wrapper,
+.post-ischemic-page .ant-checkbox-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  min-width: 0;
+}
+
+.post-ischemic-page .ant-checkbox + span,
+.post-ischemic-page .ant-radio + span {
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 20px !important;
+}
+
+.post-ischemic-page .status-group.ant-radio-group,
+.post-ischemic-page .checkbox-column.ant-checkbox-group,
+.post-ischemic-page .plan-column.ant-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.post-ischemic-page .status-group.ant-radio-group {
+  gap: 8px;
+}
+
+.post-ischemic-page .checkbox-column.ant-checkbox-group,
+.post-ischemic-page .plan-column.ant-checkbox-group {
+  gap: 5px;
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper,
+.post-ischemic-page .status-option.ant-checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--status-radio-text-gap);
+  margin-bottom: var(--status-group-gap);
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--checkbox-text-gap);
+  margin-bottom: var(--checkbox-group-gap);
+}
+
+.post-ischemic-page .plan-option.ant-checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--checkbox-text-gap);
+  margin-bottom: var(--plan-group-gap);
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper:last-child,
+.post-ischemic-page .status-option.ant-checkbox-wrapper:last-child,
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:last-child,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper .ant-radio,
+.post-ischemic-page .status-option.ant-checkbox-wrapper .ant-checkbox,
+.post-ischemic-page .mrs-item.ant-radio-wrapper .ant-radio {
+  top: 0;
+  align-self: center;
+  flex: 0 0 auto;
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper .ant-checkbox,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper .ant-checkbox {
+  top: 0;
+  align-self: flex-start;
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper .ant-radio + *,
+.post-ischemic-page .status-option.ant-checkbox-wrapper .ant-checkbox + span,
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper .ant-checkbox + span,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper .ant-checkbox + span {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0 !important;
+  line-height: 20px !important;
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper .ant-radio + span .option-text,
+.post-ischemic-page .status-option.ant-checkbox-wrapper .ant-checkbox + span .option-text,
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper .ant-checkbox + span .option-text,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper .ant-checkbox + span .option-text {
+  display: block;
+  width: 100%;
+  line-height: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper .ant-radio-inner,
+.post-ischemic-page .mrs-item.ant-radio-wrapper .ant-radio-inner {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--control-border);
+  background: #ffffff;
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper .ant-radio-checked .ant-radio-inner,
+.post-ischemic-page .mrs-item.ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
+  border-color: var(--header-bg);
+}
+
+.post-ischemic-page .status-option.ant-radio-wrapper .ant-radio-inner::after,
+.post-ischemic-page .mrs-item.ant-radio-wrapper .ant-radio-inner::after {
+  background-color: var(--header-bg);
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper .ant-checkbox-inner,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper .ant-checkbox-inner {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--control-border);
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper .ant-checkbox-checked .ant-checkbox-inner,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper .ant-checkbox-checked .ant-checkbox-inner {
+  background: var(--header-bg);
+  border-color: var(--header-bg);
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.post-ischemic-page .status-option.ant-radio-wrapper:hover .ant-radio-inner,
+.post-ischemic-page .mrs-item.ant-radio-wrapper:hover .ant-radio-inner {
+  border-color: var(--header-bg);
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:focus,
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:focus-visible,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:focus,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:focus-visible {
+  outline: none;
+}
+
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:focus .ant-checkbox-inner,
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:focus-visible .ant-checkbox-inner,
+.post-ischemic-page .checkbox-option.ant-checkbox-wrapper:focus-within .ant-checkbox-inner,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:focus .ant-checkbox-inner,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:focus-visible .ant-checkbox-inner,
+.post-ischemic-page .plan-option.ant-checkbox-wrapper:focus-within .ant-checkbox-inner {
+  border-color: var(--header-bg);
+  box-shadow: 0 0 0 2px rgba(6, 79, 141, 0.18);
+}
+
+.post-ischemic-page .ant-form-item {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.post-ischemic-page .ant-form-item .ant-form-item-control-input,
+.post-ischemic-page .ant-form-item .ant-form-item-control-input-content {
+  min-height: 0;
+  min-width: 0;
+}
+
+.post-ischemic-page .checkbox-with-input-row,
+.post-ischemic-page .checkbox-with-small-input-row {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  overflow: visible;
+}
+
+.post-ischemic-page .checkbox-with-input-row {
+  grid-template-columns: 20px max-content minmax(0, 1fr);
+  column-gap: var(--checkbox-text-gap);
+  margin-top: 0;
+}
+
+.post-ischemic-page .checkbox-with-small-input-row {
+  grid-template-columns: 20px 1fr;
+  column-gap: var(--checkbox-text-gap);
+  row-gap: 10px;
+  margin-top: 10px;
+}
+
+.post-ischemic-page .checkbox-with-input-row .ant-checkbox-group,
+.post-ischemic-page .checkbox-with-small-input-row .ant-checkbox-group {
+  display: block;
+  min-width: 20px;
+}
+
+.post-ischemic-page .checkbox-with-input-row .checkbox-option.ant-checkbox-wrapper,
+.post-ischemic-page .checkbox-with-small-input-row .checkbox-option.ant-checkbox-wrapper,
+.post-ischemic-page .checkbox-with-input-row .plan-option.ant-checkbox-wrapper,
+.post-ischemic-page .checkbox-with-small-input-row .plan-option.ant-checkbox-wrapper {
+  width: 20px;
+  min-width: 20px;
+  margin-bottom: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.post-ischemic-page .checkbox-with-input-row .checkbox-option.ant-checkbox-wrapper .ant-checkbox,
+.post-ischemic-page .checkbox-with-small-input-row .checkbox-option.ant-checkbox-wrapper .ant-checkbox,
+.post-ischemic-page .checkbox-with-input-row .plan-option.ant-checkbox-wrapper .ant-checkbox,
+.post-ischemic-page .checkbox-with-small-input-row .plan-option.ant-checkbox-wrapper .ant-checkbox {
+  margin-top: 3px;
+  align-self: flex-start;
+}
+
+.post-ischemic-page .inline-option-text {
+  display: block;
+  margin: 0;
+  padding: 0;
+  line-height: 20px;
+  min-width: 0;
+}
+
+.post-ischemic-page .other-row-current-status {
+  width: 100%;
+  max-width: 100%;
+}
+
+.post-ischemic-page .other-row-current-status.checkbox-with-small-input-row .ant-form-item:first-child {
+  grid-column: 1;
+}
+
+.post-ischemic-page .other-row-current-status.checkbox-with-small-input-row .inline-option-text {
+  grid-column: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-ischemic-page .other-row-current-status.checkbox-with-small-input-row .ant-form-item:last-child {
+  grid-column: 2;
+  width: 100%;
+}
+
+.post-ischemic-page .other-row-current-status .other-small-input.ant-input,
+.post-ischemic-page .other-row-current-status .other-input.ant-input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.post-ischemic-page .other-row-current-status .ant-form-item {
+  min-width: 0;
+  width: 100%;
+}
+
+.post-ischemic-page .other-row-barrier .inline-option-text,
+.post-ischemic-page .other-row-plan .inline-option-text {
+  white-space: nowrap;
+}
+
+.post-ischemic-page .other-row-plan.checkbox-with-input-row,
+.post-ischemic-page .other-row-plan.checkbox-with-small-input-row {
+  margin-top: 13px;
+}
+
+.post-ischemic-page .other-input.ant-input,
+.post-ischemic-page .other-small-input.ant-input {
+  height: 24px;
+  border: 1.38px solid var(--field-border);
+  border-radius: 5.52px;
+  box-shadow: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 11.9px;
+  color: var(--body-text);
+  padding-top: 0;
+  padding-bottom: 0;
+  background: #ffffff;
+}
+
+.post-ischemic-page .other-input.ant-input[disabled],
+.post-ischemic-page .other-small-input.ant-input[disabled],
+.post-ischemic-page .other-input.ant-input:disabled,
+.post-ischemic-page .other-small-input.ant-input:disabled {
+  background: var(--field-bg);
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.post-ischemic-page .other-input.ant-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.post-ischemic-page .other-small-input.ant-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.post-ischemic-page .other-input.ant-input:hover,
+.post-ischemic-page .other-input.ant-input:focus,
+.post-ischemic-page .other-small-input.ant-input:hover,
+.post-ischemic-page .other-small-input.ant-input:focus {
+  border-color: var(--field-border);
+  box-shadow: none;
+  background: #ffffff;
+}
+
+.post-ischemic-page .other-input.ant-input[disabled]:hover,
+.post-ischemic-page .other-input.ant-input[disabled]:focus,
+.post-ischemic-page .other-small-input.ant-input[disabled]:hover,
+.post-ischemic-page .other-small-input.ant-input[disabled]:focus,
+.post-ischemic-page .other-input.ant-input:disabled:hover,
+.post-ischemic-page .other-input.ant-input:disabled:focus,
+.post-ischemic-page .other-small-input.ant-input:disabled:hover,
+.post-ischemic-page .other-small-input.ant-input:disabled:focus {
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.post-ischemic-page .assessment-footer {
+  position: relative;
+  bottom: auto;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 16px;
+  border-top: 0.5px solid var(--border-blue);
+  background: #ffffff;
+}
+
+.post-ischemic-page .submit-btn.ant-btn.ant-btn-primary {
+  min-width: 120px;
+  height: 40px;
+  border-radius: 6px;
+  background: var(--header-bg);
+  border-color: var(--header-bg);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+}
+
+.post-ischemic-page .submit-btn.ant-btn.ant-btn-primary:hover,
+.post-ischemic-page .submit-btn.ant-btn.ant-btn-primary:focus {
+  background: var(--header-bg) !important;
+  border-color: var(--header-bg) !important;
+}
+
+.post-ischemic-page .assessment-mobile-list {
+  display: none;
+  max-height: none;
+  overflow-y: visible;
+}
+
+.post-ischemic-page .assessment-mobile-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-top: 0.5px solid var(--border-blue);
+  background: #ffffff;
+}
+
+.post-ischemic-page .mobile-field {
+  display: grid;
+  gap: 6px;
+}
+
+.post-ischemic-page .mobile-label {
+  color: var(--head-text);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.post-ischemic-page .mobile-value {
+  min-width: 0;
+}
+
+.post-ischemic-page .mobile-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .post-ischemic-page {
+    min-height: 100vh;
+    overflow: visible;
+    padding: 10px 6px 16px;
+  }
+
+  .post-ischemic-page .assessment-card {
+    overflow: visible;
+  }
+
+  .post-ischemic-page .assessment-header {
+    padding: 9px 8px;
+    gap: 8px;
+  }
+
+  .post-ischemic-page .assessment-title {
+    font-size: 13px;
+    line-height: 17px;
+  }
+
+  .post-ischemic-page .assessment-table-wrapper {
+    display: none !important;
+  }
+
+  .post-ischemic-page .assessment-mobile-list {
+    display: block !important;
+    overflow-y: visible;
+  }
+
+  .post-ischemic-page .assessment-mobile-card {
+    padding: 10px 8px;
+    gap: 10px;
+  }
+
+  .post-ischemic-page .mobile-label {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .post-ischemic-page .option-text,
+  .post-ischemic-page .mrs-value,
+  .post-ischemic-page .inline-option-text,
+  .post-ischemic-page .other-input.ant-input,
+  .post-ischemic-page .other-small-input.ant-input {
+    font-size: 11px;
+    line-height: 16px;
+  }
+
+  .post-ischemic-page .mrs-grid.ant-radio-group {
+    grid-template-columns: repeat(3, minmax(0, max-content));
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+
+  .post-ischemic-page .checkbox-with-input-row,
+  .post-ischemic-page .checkbox-with-small-input-row {
+    grid-template-columns: 18px minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+
+  .post-ischemic-page .checkbox-with-input-row {
+    margin-top: 8px;
+  }
+
+  .post-ischemic-page .checkbox-with-input-row .ant-form-item:first-child,
+  .post-ischemic-page .checkbox-with-small-input-row .ant-form-item:first-child {
+    grid-column: 1;
+  }
+
+  .post-ischemic-page .checkbox-with-input-row .inline-option-text,
+  .post-ischemic-page .checkbox-with-small-input-row .inline-option-text {
+    grid-column: 2;
+    white-space: normal;
+  }
+
+  .post-ischemic-page .checkbox-with-input-row .ant-form-item:last-child,
+  .post-ischemic-page .checkbox-with-small-input-row .ant-form-item:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .post-ischemic-page .other-row-current-status .inline-option-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .post-ischemic-page .status-option.ant-radio-wrapper,
+  .post-ischemic-page .status-option.ant-checkbox-wrapper,
+  .post-ischemic-page .checkbox-option.ant-checkbox-wrapper,
+  .post-ischemic-page .plan-option.ant-checkbox-wrapper {
+    gap: 10px;
+  }
+
+  .post-ischemic-page .assessment-footer {
+    position: sticky;
+    bottom: 0;
+    padding: 12px 10px;
+  }
+
+  .post-ischemic-page .submit-btn.ant-btn.ant-btn-primary {
+    width: 100%;
+    min-width: 0;
+  }
+}

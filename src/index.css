@@ -1,0 +1,44 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f4f5f7;
+  font-family: 'Open Sans', Arial, sans-serif;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+table {
+  border-spacing: 0;
+}
