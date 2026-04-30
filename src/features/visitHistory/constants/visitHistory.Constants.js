@@ -1,5 +1,7 @@
 export const VISIT_HISTORY_TITLE = 'Post Ischemic Stroke'
 
+
+
 export const DEFAULT_VISIT_HISTORY_PATIENT = {
   patientName: 'Maqbool Zahra',
   employeeId: '101010',

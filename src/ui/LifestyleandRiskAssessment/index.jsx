@@ -26,7 +26,7 @@ function formatSubmittedAssessment(values) {
       riskModifier: row.riskModifier,
       status: rowData.status || '',
       barrier: rowData.barrier || '',
-      plan: Array.isArray(rowData.plan) ? rowData.plan.join(', ') : '',
+      plan: Array.isArray(rowData.plan) ? rowData.plan : [],
     }
   })
 }
@@ -70,15 +70,20 @@ function LifestyleandRiskAssessment() {
       return
     }
 
-    const formattedAssessment = formatSubmittedAssessment(values)
+    const submittedRecord = addRecord(values)
 
-    console.group('Submitted Assessment Form')
-    console.table(formattedAssessment)
-    console.log('Raw submitted values:')
-    console.log(JSON.stringify(values, null, 2))
-    console.groupEnd()
+    console.log(
+      'Lifestyle and Risk Assessment Submitted JSON:',
+      JSON.stringify(
+        {
+          record: submittedRecord,
+          assessment: formatSubmittedAssessment(values),
+        },
+        null,
+        2,
+      ),
+    )
 
-    addRecord(values)
     message.success('Data submitted successfully')
     form.resetFields()
   }

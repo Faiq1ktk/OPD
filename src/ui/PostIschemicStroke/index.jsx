@@ -158,6 +158,11 @@ const AUTO_NONE_CURRENT_STATUS = {
   19: ['None'],
 }
 
+// Backend integration note:
+// This doctor name is temporary.
+// Later, this should come from the logged-in doctor/user data returned by the backend.
+// Example backend source: auth profile API, user session, or hospital staff context.
+
 const CURRENT_DOCTOR_NAME = 'Dr. Nabeel Muzafar'
 
 function hasEnteredData(values) {
@@ -680,7 +685,16 @@ function AppContent() {
       return
     }
 
-    visitHistory.addVisitHistoryRecord(values)
+    const submittedRecord = visitHistory.addVisitHistoryRecord(values)
+    // Backend integration note:
+    // This submittedRecord is the final JSON payload for this visit.
+    // Later, this object can be sent to the backend using an API call.
+    // Example: POST /api/post-ischemic-visits
+    console.log(
+      'Post Ischemic Stroke OPD Assessment Submitted JSON:',
+      JSON.stringify(submittedRecord, null, 2),
+    )
+
     messageApi.success('Data submitted successfully.')
 
     manualPlanSelectionsRef.current = {}

@@ -102,8 +102,16 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
               }}
               onChange={handleStatusChange}
             >
-              {row.statusOptions.map((option) => (
-                <Radio key={option} value={option}>
+              {row.statusOptions.map((option, index) => (
+                <Radio
+                  key={option}
+                  value={option}
+                  className="status-option ant-status-option"
+                  data-nav="true"
+                  data-nav-row={row.id}
+                  data-nav-col={3}
+                  data-nav-idx={index}
+                >
                   <Text className="status-text">{option}</Text>
                 </Radio>
               ))}
@@ -120,6 +128,10 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
                 style={{ '--barrier-height': `${computedBarrierHeight}px` }}
                 autoSize={false}
                 disabled={isBarrierDisabled}
+                data-nav="true"
+                data-nav-row={row.id}
+                data-nav-col={4}
+                data-nav-idx={0}
               />
             </div>
           </Form.Item>
@@ -129,8 +141,16 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
           <Text className="mobile-field__label">Plan / Patient Education</Text>
           <Form.Item name={planPath} style={{ marginBottom: 0 }}>
             <Checkbox.Group className="plan-group">
-              {row.planOptions.map((item) => (
-                <Checkbox key={item} value={item}>
+              {row.planOptions.map((item, index) => (
+                <Checkbox
+                  key={item}
+                  value={item}
+                  className="control-label ant-control-label"
+                  data-nav="true"
+                  data-nav-row={row.id}
+                  data-nav-col={5}
+                  data-nav-idx={index}
+                >
                   <Text className="plan-text">{item}</Text>
                 </Checkbox>
               ))}
@@ -166,8 +186,16 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
             }}
             onChange={handleStatusChange}
           >
-            {row.statusOptions.map((option) => (
-              <Radio key={option} value={option}>
+            {row.statusOptions.map((option, index) => (
+              <Radio
+                key={option}
+                value={option}
+                className="status-option ant-status-option"
+                data-nav="true"
+                data-nav-row={row.id}
+                data-nav-col={3}
+                data-nav-idx={index}
+              >
                 <Text className="status-text">{option}</Text>
               </Radio>
             ))}
@@ -183,6 +211,10 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
               style={{ '--barrier-height': `${computedBarrierHeight}px` }}
               autoSize={false}
               disabled={isBarrierDisabled}
+              data-nav="true"
+              data-nav-row={row.id}
+              data-nav-col={4}
+              data-nav-idx={0}
             />
           </div>
         </Form.Item>
@@ -191,8 +223,16 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
       <td>
         <Form.Item name={planPath} style={{ marginBottom: 0 }}>
           <Checkbox.Group className="plan-group">
-            {row.planOptions.map((item) => (
-              <Checkbox key={item} value={item}>
+            {row.planOptions.map((item, index) => (
+              <Checkbox
+                key={item}
+                value={item}
+                className="control-label ant-control-label"
+                data-nav="true"
+                data-nav-row={row.id}
+                data-nav-col={5}
+                data-nav-idx={index}
+              >
                 <Text className="plan-text">{item}</Text>
               </Checkbox>
             ))}

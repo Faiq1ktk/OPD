@@ -26,9 +26,17 @@ function useVisitHistory({
     setViewRecord(null)
     setIsVisitHistoryOpen(true)
   }
+   
 
   const addVisitHistoryRecord = (values) => {
     const record = createVisitHistoryRecord(values, enteredBy)
+    
+  // Backend integration note:
+  // Right now, this record is only saved in React state (frontend memory).
+  // Later, this same record should also be sent to the backend database.
+  // Example:
+  // await api.createPostIschemicVisit(record)
+
     setVisitHistoryRecords((previousRecords) => [record, ...previousRecords])
     return record
   }
