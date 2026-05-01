@@ -126,6 +126,14 @@ function LifestyleandRiskAssessment({
     }
   }
 
+  const handleSubmitClick = () => {
+    const values = form.getFieldsValue(true)
+
+    if (!hasAnyAssessmentValue(values)) {
+      setShowEmptyValidation(true)
+    }
+  }
+
   const handleFinish = (values) => {
     if (!hasAnyAssessmentValue(values)) {
       setShowEmptyValidation(true)
@@ -150,10 +158,7 @@ function LifestyleandRiskAssessment({
   const handleFinishFailed = (errorInfo) => {
     const validationMessage = getFirstValidationMessage(errorInfo)
 
-    if (validationMessage === 'Please fill the form.') {
-      setShowEmptyValidation(true)
-    }
-
+    setShowEmptyValidation(true)
     message.warning(validationMessage)
   }
 
@@ -236,6 +241,7 @@ function LifestyleandRiskAssessment({
                 data-nav-row={10}
                 data-nav-col={5}
                 data-nav-idx={0}
+                onClick={handleSubmitClick}
               >
                 Submit
               </Button>

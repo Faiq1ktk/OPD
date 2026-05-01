@@ -30,18 +30,7 @@ function getNavProps({ rowId, col, idx, type, disabled = false }) {
   }
 }
 
-function rowNeedsFullCompletion(rowId, rowData) {
-  if (![9, 11, 12, 13].includes(rowId)) return false
 
-  const currentStatus = rowData?.currentStatus
-
-  if (rowId === 9) return currentStatus !== 'Optimal'
-  if (rowId === 11) return currentStatus !== 'On statin'
-  if (rowId === 12) return currentStatus !== 'BP at target'
-  if (rowId === 13) return currentStatus !== 'Optimal'
-
-  return false
-}
 
 function hasRowData(rowData) {
   if (!rowData || typeof rowData !== 'object') return false
@@ -64,6 +53,40 @@ function getRowData(form, rowId) {
     form.getFieldValue(['assessment', String(rowId)]) ??
     {}
   )
+}
+
+function shouldShowMRSError({
+  row,
+  rowData,
+  showEmptyValidation,
+}) {
+  if (!showEmptyValidation) return false
+  if (row.id !== 1 || !row.riskExtra?.required) return false
+  if (!hasRowData(rowData)) return false
+
+  return !isNonEmptyString(rowData?.mrs)
+}
+
+function shouldShowCurrentStatusError({
+  row,
+  rowData,
+  isCurrentStatusEnabled,
+  showEmptyValidation,
+}) {
+  if (!showEmptyValidation) return false
+  if (!isCurrentStatusEnabled) return false
+
+  const rowHasData = hasRowData(rowData)
+
+  if (!row.required && !rowHasData) {
+    return false
+  }
+
+  if (row.id === 1 && rowHasData && !isNonEmptyString(rowData?.mrs)) {
+    return false
+  }
+
+  return !hasSelection(rowData?.currentStatus, row.currentStatus.type)
 }
 
 function createMRSRules(row, form) {
@@ -119,54 +142,10 @@ function createCurrentStatusRules(row, form) {
   ]
 }
 
-function createBarrierRules(row, form) {
-  return [
-    {
-      validator: (_, value) => {
-        const rowData = getRowData(form, row.id)
-
-        if (!rowNeedsFullCompletion(row.id, rowData)) {
-          return Promise.resolve()
-        }
-
-        if (toArray(value).length > 0) {
-          return Promise.resolve()
-        }
-
-        return Promise.reject(
-          new Error(`${row.riskModifier}: Barrier Identified is required.`),
-        )
-      },
-    },
-  ]
-}
-
-function createPlanRules(row, form) {
-  return [
-    {
-      validator: (_, value) => {
-        const rowData = getRowData(form, row.id)
-
-        if (!rowNeedsFullCompletion(row.id, rowData)) {
-          return Promise.resolve()
-        }
-
-        if (toArray(value).length > 0) {
-          return Promise.resolve()
-        }
-
-        return Promise.reject(
-          new Error(`${row.riskModifier}: Plan / Education is required.`),
-        )
-      },
-    },
-  ]
-}
-
 function getSilentValidationProps(showError) {
   return {
     validateStatus: showError ? 'error' : undefined,
-    help: null,
+    help: '',
   }
 }
 
@@ -440,7 +419,7 @@ function CheckboxGroupBlock({
           <Form.Item
             name={['assessment', rowId, `${fieldKey}Other`]}
             style={{ marginBottom: 0 }}
-            help={null}
+            help=""
           >
             <Input
               ref={otherInputRef}
@@ -520,13 +499,29 @@ function RowFields({ row, form, showEmptyValidation }) {
     isPlanEnabled,
   } = useRowInteractionState(row, form)
 
+  const watchedRowData = Form.useWatch(['assessment', row.id], form)
+  const rowData = watchedRowData ?? getRowData(form, row.id)
+
+  const showMRSError = shouldShowMRSError({
+    row,
+    rowData,
+    showEmptyValidation,
+  })
+
+  const showCurrentStatusError = shouldShowCurrentStatusError({
+    row,
+    rowData,
+    isCurrentStatusEnabled,
+    showEmptyValidation,
+  })
+
   return (
     <>
       <td>
         <RiskModifierContent
           row={row}
           form={form}
-          showEmptyValidation={showEmptyValidation && row.id === 1}
+          showEmptyValidation={showMRSError}
         />
       </td>
 
@@ -535,7 +530,7 @@ function RowFields({ row, form, showEmptyValidation }) {
           row={row}
           form={form}
           disabled={!isCurrentStatusEnabled}
-          showEmptyValidation={showEmptyValidation && isCurrentStatusEnabled}
+          showEmptyValidation={showCurrentStatusError}
         />
       </td>
 
@@ -549,7 +544,7 @@ function RowFields({ row, form, showEmptyValidation }) {
           otherInputLabel="Other"
           disabled={!isBarrierEnabled}
           navCol={2}
-          rules={createBarrierRules(row, form)}
+          rules={[]}
         />
       </td>
 
@@ -561,7 +556,7 @@ function RowFields({ row, form, showEmptyValidation }) {
           options={row.planEducation.options}
           disabled={!isPlanEnabled}
           navCol={3}
-          rules={createPlanRules(row, form)}
+          rules={[]}
         />
       </td>
     </>
@@ -587,6 +582,22 @@ function MobileRow({ row, form, showEmptyValidation }) {
     isPlanEnabled,
   } = useRowInteractionState(row, form)
 
+  const watchedRowData = Form.useWatch(['assessment', row.id], form)
+  const rowData = watchedRowData ?? getRowData(form, row.id)
+
+  const showMRSError = shouldShowMRSError({
+    row,
+    rowData,
+    showEmptyValidation,
+  })
+
+  const showCurrentStatusError = shouldShowCurrentStatusError({
+    row,
+    rowData,
+    isCurrentStatusEnabled,
+    showEmptyValidation,
+  })
+
   return (
     <div className="assessment-mobile-card">
       <div className="mobile-field">
@@ -595,7 +606,7 @@ function MobileRow({ row, form, showEmptyValidation }) {
           <RiskModifierContent
             row={row}
             form={form}
-            showEmptyValidation={showEmptyValidation && row.id === 1}
+            showEmptyValidation={showMRSError}
           />
         </div>
       </div>
@@ -607,7 +618,7 @@ function MobileRow({ row, form, showEmptyValidation }) {
             row={row}
             form={form}
             disabled={!isCurrentStatusEnabled}
-            showEmptyValidation={showEmptyValidation && isCurrentStatusEnabled}
+            showEmptyValidation={showCurrentStatusError}
           />
         </div>
       </div>
@@ -624,7 +635,7 @@ function MobileRow({ row, form, showEmptyValidation }) {
             otherInputLabel="Other"
             disabled={!isBarrierEnabled}
             navCol={2}
-            rules={createBarrierRules(row, form)}
+            rules={[]}
           />
         </div>
       </div>
@@ -639,7 +650,7 @@ function MobileRow({ row, form, showEmptyValidation }) {
             options={row.planEducation.options}
             disabled={!isPlanEnabled}
             navCol={3}
-            rules={createPlanRules(row, form)}
+            rules={[]}
           />
         </div>
       </div>
