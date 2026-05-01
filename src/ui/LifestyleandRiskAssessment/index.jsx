@@ -42,16 +42,17 @@ function formatLifestyleAssessmentJson(values) {
         const rowData = assessment[row.id] || {}
         const statusOptions = row.statusOptions || []
         const planOptions = row.planOptions || []
-        const selectedStatus = rowData.status || ''
-        const currentStatus = String(getOptionId(statusOptions, selectedStatus))
 
-        if (!isNonEmptyString(currentStatus)) {
+        const selectedStatus = rowData.status || ''
+        const currentStatusId = getOptionId(statusOptions, selectedStatus)
+
+        if (!currentStatusId) {
           return null
         }
 
         const payload = {
           risk_modifier_id: row.id,
-          current_status: currentStatus,
+          current_status: String(currentStatusId),
         }
 
         if (isNonEmptyString(rowData.barrier)) {

@@ -297,42 +297,98 @@ function getSelectedOptionIds(options, selectedOptions) {
     .filter((optionId) => optionId !== '')
 }
 
+function getSelectedOptionIdString(options, selectedOptions) {
+  return getSelectedOptionIds(options, selectedOptions).join(',')
+}
+
+function buildBackendAssessmentPayload(row, rowData) {
+  const currentStatusOptions = row.currentStatus?.options ?? []
+  const barrierOptions = row.barrierIdentified?.options ?? []
+  const planOptions = row.planEducation?.options ?? []
+
+  const currentStatusValue = rowData.currentStatus
+  const isCheckboxCurrentStatus = row.currentStatus?.type === 'checkbox'
+
+  const currentStatus = isCheckboxCurrentStatus
+    ? getSelectedOptionIdString(currentStatusOptions, currentStatusValue)
+    : String(getOptionId(currentStatusOptions, currentStatusValue))
+
+  const neurologicalStatus = getOptionId(row.riskExtra?.options ?? [], rowData.mrs)
+  const barrierOptionIds = getSelectedOptionIds(
+    barrierOptions,
+    rowData.barrierIdentified,
+  )
+  const planOptionIds = getSelectedOptionIds(planOptions, rowData.planEducation)
+
+  const hasCurrentStatus = isNonEmptyString(currentStatus)
+  const hasNeurologicalStatus = row.id === 1 && neurologicalStatus !== ''
+  const hasCurrentStatusText =
+    row.currentStatus?.type === 'checkbox' &&
+    isNonEmptyString(rowData.currentStatusOther)
+  const hasBarrierText = isNonEmptyString(rowData.barrierIdentifiedOther)
+  const hasBarrierOptions = barrierOptionIds.length > 0
+  const hasPlanOptions = planOptionIds.length > 0
+
+  if (
+    !hasCurrentStatus &&
+    !hasNeurologicalStatus &&
+    !hasCurrentStatusText &&
+    !hasBarrierText &&
+    !hasBarrierOptions &&
+    !hasPlanOptions
+  ) {
+    return null
+  }
+
+  const payload = {
+    risk_modifier_id: row.id,
+  }
+
+  if (hasNeurologicalStatus) {
+    payload.neurological_status = String(neurologicalStatus)
+  }
+
+  if (hasCurrentStatus) {
+    payload.current_status = currentStatus
+  }
+
+  if (hasCurrentStatusText) {
+    payload.current_status_text = rowData.currentStatusOther.trim()
+  }
+
+  if (hasBarrierText) {
+    payload.barrier_identified = rowData.barrierIdentifiedOther.trim()
+  }
+
+  if (hasBarrierOptions) {
+    payload.barrier_options = barrierOptionIds
+  }
+
+  if (hasPlanOptions) {
+    payload.plan_options = planOptionIds
+  }
+
+  return payload
+}
+
 function formatPostIschemicAssessmentJson(values) {
   const assessment = values?.assessment ?? {}
 
   return {
-    assessments: strokeAssessmentData.map((row) => {
-      const rowData = assessment[row.id] ?? assessment[String(row.id)] ?? {}
-      const currentStatusOptions = row.currentStatus?.options ?? []
-      const barrierOptions = row.barrierIdentified?.options ?? []
-      const planOptions = row.planEducation?.options ?? []
+    assessments: strokeAssessmentData
+      .map((row) => {
+        const rowData = assessment[row.id] ?? assessment[String(row.id)] ?? {}
 
-      const currentStatusValue = rowData.currentStatus
-      const isCheckboxCurrentStatus = row.currentStatus?.type === 'checkbox'
-
-      const currentStatus = isCheckboxCurrentStatus
-        ? getSelectedOptionIds(currentStatusOptions, currentStatusValue).join(',')
-        : String(getOptionId(currentStatusOptions, currentStatusValue))
-
-      const currentStatusText = isCheckboxCurrentStatus
-        ? rowData.currentStatusOther ?? ''
-        : isNonEmptyString(currentStatusValue)
-          ? String(currentStatusValue).toUpperCase()
-          : ''
-
-      return {
-        risk_modifier_id: row.id,
-        current_status: currentStatus,
-        current_status_text: currentStatusText,
-        barrier_identified: rowData.barrierIdentifiedOther ?? '',
-        barrier_options: getSelectedOptionIds(
-          barrierOptions,
-          rowData.barrierIdentified,
-        ),
-        plan_options: getSelectedOptionIds(planOptions, rowData.planEducation),
-      }
-    }),
+        return buildBackendAssessmentPayload(row, rowData)
+      })
+      .filter(Boolean),
   }
+}
+
+function getChangedAssessmentRowIds(changedAssessment) {
+  return Object.keys(changedAssessment ?? {})
+    .map((rowId) => Number(rowId))
+    .filter((rowId) => Number.isFinite(rowId))
 }
 
 function normalizeAssessment({
@@ -344,8 +400,16 @@ function normalizeAssessment({
 }) {
   const assessment = cloneAssessment(allValues?.assessment ?? {})
   const changedAssessment = changedValues?.assessment ?? {}
+  const changedRowIds = getChangedAssessmentRowIds(changedAssessment)
 
-  strokeAssessmentData.forEach((row) => {
+  // Bug fix: normalize only the row that changed.
+  // This prevents selecting "None" in one row from applying auto-selection to the whole form.
+  const rowsToNormalize =
+    changedRowIds.length > 0
+      ? strokeAssessmentData.filter((row) => changedRowIds.includes(row.id))
+      : strokeAssessmentData
+
+  rowsToNormalize.forEach((row) => {
     const rowId = row.id
     const rowKey = String(rowId)
     const rowData = { ...(assessment[rowKey] ?? {}) }
