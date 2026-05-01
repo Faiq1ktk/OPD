@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Button } from './ui/antd'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 
@@ -7,6 +8,10 @@ import LifestyleandRiskAssessment from './ui/LifestyleandRiskAssessment'
 function App() {
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Keeps both histories alive while switching routes. Clears only on browser refresh.
+  const [postIschemicHistoryRecords, setPostIschemicHistoryRecords] = useState([])
+  const [lifestyleHistoryRecords, setLifestyleHistoryRecords] = useState([])
 
   const currentPath = location.pathname
 
@@ -38,8 +43,25 @@ function App() {
 
       {/* ROUTES */}
       <Routes>
-        <Route path="/" element={<PostIschemicStroke />} />
-        <Route path="/lifestyle" element={<LifestyleandRiskAssessment />} />
+        <Route
+          path="/"
+          element={
+            <PostIschemicStroke
+              visitHistoryRecords={postIschemicHistoryRecords}
+              setVisitHistoryRecords={setPostIschemicHistoryRecords}
+            />
+          }
+        />
+
+        <Route
+          path="/lifestyle"
+          element={
+            <LifestyleandRiskAssessment
+              lifestyleHistoryRecords={lifestyleHistoryRecords}
+              setLifestyleHistoryRecords={setLifestyleHistoryRecords}
+            />
+          }
+        />
       </Routes>
     </div>
   )

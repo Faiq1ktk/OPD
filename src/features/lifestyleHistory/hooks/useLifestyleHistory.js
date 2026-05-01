@@ -1,19 +1,27 @@
 import { useState } from 'react'
 import { generateVisitRecord } from '../utils/lifestyleHistory.utils'
 
-export function useLifestyleHistory(context = {}) {
-  const [records, setRecords] = useState([])
+export function useLifestyleHistory(context = {}, historyStore = {}) {
+  const [internalRecords, setInternalRecords] = useState([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [viewRecord, setViewRecord] = useState(null)
+
+  const records = Array.isArray(historyStore.records)
+    ? historyStore.records
+    : internalRecords
+
+  const setRecords =
+    typeof historyStore.setRecords === 'function'
+      ? historyStore.setRecords
+      : setInternalRecords
 
   const addRecord = (values) => {
     const record = generateVisitRecord(values, context)
 
-  // Backend integration note:
-  // Right now, this record is only stored in React state (frontend memory).
-  // Later, this same record should also be sent to the backend database.
-  // Example:
-  // await api.createLifestyleRiskAssessment(record)
+    // Keeps lifestyle history above route level when provided, so navigation does not clear it.
+    // Later, this same record should also be sent to the backend database.
+    // Example:
+    // await api.createLifestyleRiskAssessment(record)
 
     setRecords((prev) => [record, ...prev])
     return record

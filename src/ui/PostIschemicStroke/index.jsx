@@ -284,6 +284,57 @@ function cloneAssessment(assessment) {
   return cloned
 }
 
+function getOptionId(options, selectedOption) {
+  const optionIndex = options.indexOf(selectedOption)
+  return optionIndex >= 0 ? optionIndex + 1 : ''
+}
+
+function getSelectedOptionIds(options, selectedOptions) {
+  const selectedList = toArray(selectedOptions)
+
+  return selectedList
+    .map((selectedOption) => getOptionId(options, selectedOption))
+    .filter((optionId) => optionId !== '')
+}
+
+function formatPostIschemicAssessmentJson(values) {
+  const assessment = values?.assessment ?? {}
+
+  return {
+    assessments: strokeAssessmentData.map((row) => {
+      const rowData = assessment[row.id] ?? assessment[String(row.id)] ?? {}
+      const currentStatusOptions = row.currentStatus?.options ?? []
+      const barrierOptions = row.barrierIdentified?.options ?? []
+      const planOptions = row.planEducation?.options ?? []
+
+      const currentStatusValue = rowData.currentStatus
+      const isCheckboxCurrentStatus = row.currentStatus?.type === 'checkbox'
+
+      const currentStatus = isCheckboxCurrentStatus
+        ? getSelectedOptionIds(currentStatusOptions, currentStatusValue).join(',')
+        : String(getOptionId(currentStatusOptions, currentStatusValue))
+
+      const currentStatusText = isCheckboxCurrentStatus
+        ? rowData.currentStatusOther ?? ''
+        : isNonEmptyString(currentStatusValue)
+          ? String(currentStatusValue).toUpperCase()
+          : ''
+
+      return {
+        risk_modifier_id: row.id,
+        current_status: currentStatus,
+        current_status_text: currentStatusText,
+        barrier_identified: rowData.barrierIdentifiedOther ?? '',
+        barrier_options: getSelectedOptionIds(
+          barrierOptions,
+          rowData.barrierIdentified,
+        ),
+        plan_options: getSelectedOptionIds(planOptions, rowData.planEducation),
+      }
+    }),
+  }
+}
+
 function normalizeAssessment({
   allValues,
   changedValues,
@@ -483,6 +534,14 @@ function validateBeforeSubmit(values) {
   return ''
 }
 
+function getFirstValidationMessage(errorInfo) {
+  const firstError = errorInfo?.errorFields?.find(
+    (field) => Array.isArray(field.errors) && field.errors.length > 0,
+  )
+
+  return firstError?.errors?.[0] || 'Please fill the form.'
+}
+
 function useIsMobile(breakpoint = 600) {
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -505,9 +564,10 @@ function useIsMobile(breakpoint = 600) {
   return isMobile
 }
 
-function AppContent() {
+function AppContent({ visitHistoryRecords, setVisitHistoryRecords }) {
   const [form] = Form.useForm()
   const [messageApi, contextHolder] = message.useMessage()
+  const [showEmptyValidation, setShowEmptyValidation] = useState(false)
 
   const applyingLogicRef = useRef(false)
   const previousAssessmentRef = useRef({})
@@ -525,9 +585,16 @@ function AppContent() {
     autoPlanDependencies: AUTO_PLAN_DEPENDENCIES,
     enteredBy: CURRENT_DOCTOR_NAME,
     messageApi,
+    // Keeps Post Ischemic history above this route so navigation does not clear it.
+    visitHistoryRecords,
+    setVisitHistoryRecords,
   })
 
   const handleValuesChange = (changedValues, allValues) => {
+    if (hasEnteredData(allValues)) {
+      setShowEmptyValidation(false)
+    }
+
     if (applyingLogicRef.current) return
 
     const normalizedAssessment = normalizeAssessment({
@@ -674,7 +741,8 @@ function AppContent() {
     const entered = hasEnteredData(values)
 
     if (!entered) {
-      messageApi.info('No data entered.')
+      setShowEmptyValidation(true)
+      messageApi.warning('Please fill the form.')
       return
     }
 
@@ -685,22 +753,37 @@ function AppContent() {
       return
     }
 
-    const submittedRecord = visitHistory.addVisitHistoryRecord(values)
+    visitHistory.addVisitHistoryRecord(values)
+    const formattedAssessmentJson = formatPostIschemicAssessmentJson(values)
+
     // Backend integration note:
-    // This submittedRecord is the final JSON payload for this visit.
+    // This formattedAssessmentJson is the backend-friendly JSON payload for this visit.
     // Later, this object can be sent to the backend using an API call.
     // Example: POST /api/post-ischemic-visits
     console.log(
       'Post Ischemic Stroke OPD Assessment Submitted JSON:',
-      JSON.stringify(submittedRecord, null, 2),
+      JSON.stringify(formattedAssessmentJson, null, 2),
     )
 
     messageApi.success('Data submitted successfully.')
 
+    setShowEmptyValidation(false)
     manualPlanSelectionsRef.current = {}
     barrierNoneOverrideRef.current = {}
     previousAssessmentRef.current = {}
     form.resetFields()
+  }
+
+  const handleFinishFailed = (errorInfo) => {
+    const validationMessage = getFirstValidationMessage(errorInfo)
+
+    if (validationMessage === 'Please fill the form.') {
+      setShowEmptyValidation(true)
+      messageApi.warning(validationMessage)
+      return
+    }
+
+    messageApi.error(validationMessage)
   }
 
   return (
@@ -714,6 +797,7 @@ function AppContent() {
             layout="vertical"
             onValuesChange={handleValuesChange}
             onFinish={handleFinish}
+            onFinishFailed={handleFinishFailed}
             className="assessment-form"
           >
             <div
@@ -740,7 +824,12 @@ function AppContent() {
 
                     <tbody>
                       {strokeAssessmentData.map((row) => (
-                        <AssessmentRow key={row.id} row={row} form={form} />
+                        <AssessmentRow
+                          key={row.id}
+                          row={row}
+                          form={form}
+                          showEmptyValidation={showEmptyValidation}
+                        />
                       ))}
                     </tbody>
                   </table>
@@ -753,6 +842,7 @@ function AppContent() {
                       row={row}
                       mobile
                       form={form}
+                      showEmptyValidation={showEmptyValidation}
                     />
                   ))}
                 </div>
@@ -799,10 +889,16 @@ function AppContent() {
   )
 }
 
-function PostIschemicStroke() {
+function PostIschemicStroke({
+  visitHistoryRecords = [],
+  setVisitHistoryRecords,
+}) {
   return (
     <AntApp>
-      <AppContent />
+      <AppContent
+        visitHistoryRecords={visitHistoryRecords}
+        setVisitHistoryRecords={setVisitHistoryRecords}
+      />
     </AntApp>
   )
 }

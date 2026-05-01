@@ -15,6 +15,10 @@ function hasSelection(value, type) {
   return typeof value === 'string' && value.trim() !== ''
 }
 
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== ''
+}
+
 function getNavProps({ rowId, col, idx, type, disabled = false }) {
   return {
     'data-nav': 'true',
@@ -23,6 +27,146 @@ function getNavProps({ rowId, col, idx, type, disabled = false }) {
     'data-nav-idx': idx,
     'data-nav-type': type,
     tabIndex: disabled ? -1 : 0,
+  }
+}
+
+function rowNeedsFullCompletion(rowId, rowData) {
+  if (![9, 11, 12, 13].includes(rowId)) return false
+
+  const currentStatus = rowData?.currentStatus
+
+  if (rowId === 9) return currentStatus !== 'Optimal'
+  if (rowId === 11) return currentStatus !== 'On statin'
+  if (rowId === 12) return currentStatus !== 'BP at target'
+  if (rowId === 13) return currentStatus !== 'Optimal'
+
+  return false
+}
+
+function hasRowData(rowData) {
+  if (!rowData || typeof rowData !== 'object') return false
+
+  return (
+    isNonEmptyString(rowData.mrs) ||
+    isNonEmptyString(rowData.currentStatus) ||
+    toArray(rowData.currentStatus).length > 0 ||
+    toArray(rowData.barrierIdentified).length > 0 ||
+    toArray(rowData.planEducation).length > 0 ||
+    isNonEmptyString(rowData.currentStatusOther) ||
+    isNonEmptyString(rowData.barrierIdentifiedOther) ||
+    isNonEmptyString(rowData.planEducationOther)
+  )
+}
+
+function getRowData(form, rowId) {
+  return (
+    form.getFieldValue(['assessment', rowId]) ??
+    form.getFieldValue(['assessment', String(rowId)]) ??
+    {}
+  )
+}
+
+function createMRSRules(row, form) {
+  if (row.id !== 1 || !row.riskExtra?.required) return []
+
+  return [
+    {
+      validator: (_, value) => {
+        const rowData = getRowData(form, row.id)
+
+        if (!hasRowData(rowData)) {
+          return Promise.resolve()
+        }
+
+        if (isNonEmptyString(value)) {
+          return Promise.resolve()
+        }
+
+        return Promise.reject(new Error('mRS must be selected first.'))
+      },
+    },
+  ]
+}
+
+function createCurrentStatusRules(row, form) {
+  return [
+    {
+      validator: (_, value) => {
+        const rowData = getRowData(form, row.id)
+        const rowHasData = hasRowData(rowData)
+
+        if (!row.required && !rowHasData) {
+          return Promise.resolve()
+        }
+
+        if (row.id === 1 && rowHasData && !isNonEmptyString(rowData.mrs)) {
+          return Promise.resolve()
+        }
+
+        if (hasSelection(value, row.currentStatus.type)) {
+          return Promise.resolve()
+        }
+
+        if (row.required || rowHasData) {
+          return Promise.reject(
+            new Error(`${row.riskModifier}: Current Status is required.`),
+          )
+        }
+
+        return Promise.resolve()
+      },
+    },
+  ]
+}
+
+function createBarrierRules(row, form) {
+  return [
+    {
+      validator: (_, value) => {
+        const rowData = getRowData(form, row.id)
+
+        if (!rowNeedsFullCompletion(row.id, rowData)) {
+          return Promise.resolve()
+        }
+
+        if (toArray(value).length > 0) {
+          return Promise.resolve()
+        }
+
+        return Promise.reject(
+          new Error(`${row.riskModifier}: Barrier Identified is required.`),
+        )
+      },
+    },
+  ]
+}
+
+function createPlanRules(row, form) {
+  return [
+    {
+      validator: (_, value) => {
+        const rowData = getRowData(form, row.id)
+
+        if (!rowNeedsFullCompletion(row.id, rowData)) {
+          return Promise.resolve()
+        }
+
+        if (toArray(value).length > 0) {
+          return Promise.resolve()
+        }
+
+        return Promise.reject(
+          new Error(`${row.riskModifier}: Plan / Education is required.`),
+        )
+      },
+    },
+  ]
+}
+
+function getSilentValidationProps(showError) {
+  return {
+    validateStatus: showError ? 'error' : undefined,
+    help: null,
   }
 }
 
@@ -54,7 +198,7 @@ function useRowInteractionState(row, form) {
   }
 }
 
-function MRSBlock({ row, disabled = false }) {
+function MRSBlock({ row, form, disabled = false, showEmptyValidation = false }) {
   return (
     <div className="mrs-wrap">
       <div className="mrs-label">
@@ -62,7 +206,12 @@ function MRSBlock({ row, disabled = false }) {
         {row.riskExtra.required && <span className="required-asterisk">*</span>}
       </div>
 
-      <Form.Item name={['assessment', row.id, 'mrs']} style={{ marginBottom: 0 }}>
+      <Form.Item
+        name={['assessment', row.id, 'mrs']}
+        style={{ marginBottom: 0 }}
+        rules={createMRSRules(row, form)}
+        {...getSilentValidationProps(showEmptyValidation)}
+      >
         <Radio.Group className="mrs-grid" disabled={disabled}>
           {row.riskExtra.options.map((item, index) => (
             <Radio
@@ -87,9 +236,23 @@ function MRSBlock({ row, disabled = false }) {
   )
 }
 
-function RadioGroupBlock({ rowId, fieldKey, options, disabled = false, navCol }) {
+function RadioGroupBlock({
+  rowId,
+  fieldKey,
+  options,
+  disabled = false,
+  navCol,
+  rules = [],
+  showError = false,
+}) {
   return (
-    <Form.Item name={['assessment', rowId, fieldKey]} style={{ marginBottom: 0 }}>
+    <Form.Item
+      name={['assessment', rowId, fieldKey]}
+      style={{ marginBottom: 0 }}
+      rules={rules}
+      dependencies={[['assessment', rowId]]}
+      {...getSilentValidationProps(showError)}
+    >
       <Radio.Group className="status-group" disabled={disabled}>
         {options.map((item, index) => (
           <Radio
@@ -123,6 +286,8 @@ function CheckboxGroupBlock({
   smallOtherInput = false,
   disabled = false,
   navCol,
+  rules = [],
+  showError = false,
 }) {
   const selectedValues = toArray(Form.useWatch(['assessment', rowId, fieldKey], form))
   const isBarrierField = fieldKey === 'barrierIdentified'
@@ -211,6 +376,8 @@ function CheckboxGroupBlock({
       <Form.Item
         name={['assessment', rowId, fieldKey]}
         style={{ marginBottom: 0 }}
+        rules={rules}
+        dependencies={[['assessment', rowId]]}
         getValueFromEvent={(nextMainValues) => {
           const nextValues = toArray(nextMainValues)
 
@@ -224,6 +391,7 @@ function CheckboxGroupBlock({
 
           return nextValues
         }}
+        {...getSilentValidationProps(showError)}
       >
         <Checkbox.Group className={groupClass} disabled={disabled}>
           {mainOptions.map((item, index) => {
@@ -272,6 +440,7 @@ function CheckboxGroupBlock({
           <Form.Item
             name={['assessment', rowId, `${fieldKey}Other`]}
             style={{ marginBottom: 0 }}
+            help={null}
           >
             <Input
               ref={otherInputRef}
@@ -293,7 +462,7 @@ function CheckboxGroupBlock({
   )
 }
 
-function CurrentStatusField({ row, form, disabled }) {
+function CurrentStatusField({ row, form, disabled, showEmptyValidation }) {
   if (row.currentStatus.type === 'radio') {
     return (
       <RadioGroupBlock
@@ -302,6 +471,8 @@ function CurrentStatusField({ row, form, disabled }) {
         options={row.currentStatus.options}
         disabled={disabled}
         navCol={1}
+        rules={createCurrentStatusRules(row, form)}
+        showError={showEmptyValidation}
       />
     )
   }
@@ -317,11 +488,13 @@ function CurrentStatusField({ row, form, disabled }) {
       smallOtherInput={row.currentStatus.smallOtherInput}
       disabled={disabled}
       navCol={1}
+      rules={createCurrentStatusRules(row, form)}
+      showError={showEmptyValidation}
     />
   )
 }
 
-function RiskModifierContent({ row }) {
+function RiskModifierContent({ row, form, showEmptyValidation }) {
   return (
     <div className="risk-block">
       <div className="risk-title">
@@ -329,12 +502,18 @@ function RiskModifierContent({ row }) {
         {row.required && <span className="required-asterisk"> *</span>}
       </div>
 
-      {row.riskExtra?.type === 'mrs' && <MRSBlock row={row} />}
+      {row.riskExtra?.type === 'mrs' && (
+        <MRSBlock
+          row={row}
+          form={form}
+          showEmptyValidation={showEmptyValidation}
+        />
+      )}
     </div>
   )
 }
 
-function RowFields({ row, form }) {
+function RowFields({ row, form, showEmptyValidation }) {
   const {
     isCurrentStatusEnabled,
     isBarrierEnabled,
@@ -344,7 +523,11 @@ function RowFields({ row, form }) {
   return (
     <>
       <td>
-        <RiskModifierContent row={row} />
+        <RiskModifierContent
+          row={row}
+          form={form}
+          showEmptyValidation={showEmptyValidation && row.id === 1}
+        />
       </td>
 
       <td>
@@ -352,6 +535,7 @@ function RowFields({ row, form }) {
           row={row}
           form={form}
           disabled={!isCurrentStatusEnabled}
+          showEmptyValidation={showEmptyValidation && isCurrentStatusEnabled}
         />
       </td>
 
@@ -365,6 +549,7 @@ function RowFields({ row, form }) {
           otherInputLabel="Other"
           disabled={!isBarrierEnabled}
           navCol={2}
+          rules={createBarrierRules(row, form)}
         />
       </td>
 
@@ -376,21 +561,26 @@ function RowFields({ row, form }) {
           options={row.planEducation.options}
           disabled={!isPlanEnabled}
           navCol={3}
+          rules={createPlanRules(row, form)}
         />
       </td>
     </>
   )
 }
 
-function DesktopRow({ row, form }) {
+function DesktopRow({ row, form, showEmptyValidation }) {
   return (
     <tr>
-      <RowFields row={row} form={form} />
+      <RowFields
+        row={row}
+        form={form}
+        showEmptyValidation={showEmptyValidation}
+      />
     </tr>
   )
 }
 
-function MobileRow({ row, form }) {
+function MobileRow({ row, form, showEmptyValidation }) {
   const {
     isCurrentStatusEnabled,
     isBarrierEnabled,
@@ -402,7 +592,11 @@ function MobileRow({ row, form }) {
       <div className="mobile-field">
         <div className="mobile-label">Risk Modifier</div>
         <div className="mobile-value">
-          <RiskModifierContent row={row} />
+          <RiskModifierContent
+            row={row}
+            form={form}
+            showEmptyValidation={showEmptyValidation && row.id === 1}
+          />
         </div>
       </div>
 
@@ -413,6 +607,7 @@ function MobileRow({ row, form }) {
             row={row}
             form={form}
             disabled={!isCurrentStatusEnabled}
+            showEmptyValidation={showEmptyValidation && isCurrentStatusEnabled}
           />
         </div>
       </div>
@@ -429,6 +624,7 @@ function MobileRow({ row, form }) {
             otherInputLabel="Other"
             disabled={!isBarrierEnabled}
             navCol={2}
+            rules={createBarrierRules(row, form)}
           />
         </div>
       </div>
@@ -443,6 +639,7 @@ function MobileRow({ row, form }) {
             options={row.planEducation.options}
             disabled={!isPlanEnabled}
             navCol={3}
+            rules={createPlanRules(row, form)}
           />
         </div>
       </div>
@@ -450,12 +647,24 @@ function MobileRow({ row, form }) {
   )
 }
 
-function AssessmentRow({ row, mobile = false, form }) {
+function AssessmentRow({ row, mobile = false, form, showEmptyValidation = false }) {
   if (mobile) {
-    return <MobileRow row={row} form={form} />
+    return (
+      <MobileRow
+        row={row}
+        form={form}
+        showEmptyValidation={showEmptyValidation}
+      />
+    )
   }
 
-  return <DesktopRow row={row} form={form} />
+  return (
+    <DesktopRow
+      row={row}
+      form={form}
+      showEmptyValidation={showEmptyValidation}
+    />
+  )
 }
 
 export default AssessmentRow

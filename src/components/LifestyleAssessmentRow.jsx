@@ -50,7 +50,51 @@ function getAutoSelectedPlanOptions(row, selectedStatus) {
   return autoSelectionMap[row.id]?.[selectedStatus]
 }
 
-function LifestyleAssessmentRow({ row, form, mobile = false }) {
+function hasAnyAssessmentValue(form) {
+  const assessment = form.getFieldValue('assessment') || {}
+
+  return Object.values(assessment).some((rowData) => {
+    if (!rowData || typeof rowData !== 'object') return false
+
+    const hasStatus =
+      typeof rowData.status === 'string' && rowData.status.trim() !== ''
+
+    const hasBarrier =
+      typeof rowData.barrier === 'string' && rowData.barrier.trim() !== ''
+
+    const hasPlan = Array.isArray(rowData.plan) && rowData.plan.length > 0
+
+    return hasStatus || hasBarrier || hasPlan
+  })
+}
+
+function createLifestyleStatusRules(form) {
+  return [
+    {
+      validator: () => {
+        if (hasAnyAssessmentValue(form)) {
+          return Promise.resolve()
+        }
+
+        return Promise.reject(new Error('Please fill the form.'))
+      },
+    },
+  ]
+}
+
+function getSilentValidationProps(showError) {
+  return {
+    validateStatus: showError ? 'error' : undefined,
+    help: null,
+  }
+}
+
+function LifestyleAssessmentRow({
+  row,
+  form,
+  mobile = false,
+  showEmptyValidation = false,
+}) {
   const statusPath = ['assessment', row.id, 'status']
   const barrierPath = ['assessment', row.id, 'barrier']
   const planPath = ['assessment', row.id, 'plan']
@@ -94,7 +138,12 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
 
         <div className="mobile-field">
           <Text className="mobile-field__label">Current Status</Text>
-          <Form.Item name={statusPath} style={{ marginBottom: 4 }}>
+          <Form.Item
+            name={statusPath}
+            style={{ marginBottom: 4 }}
+            rules={createLifestyleStatusRules(form)}
+            {...getSilentValidationProps(showEmptyValidation)}
+          >
             <Radio.Group
               className="current-status-group ant-status-group"
               style={{
@@ -121,7 +170,7 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
 
         <div className="mobile-field">
           <Text className="mobile-field__label">Barrier Identified</Text>
-          <Form.Item name={barrierPath} style={{ marginBottom: 0 }}>
+          <Form.Item name={barrierPath} style={{ marginBottom: 0 }} help={null}>
             <div className="barrier-field-wrap">
               <TextArea
                 className="barrier-textarea"
@@ -139,7 +188,7 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
 
         <div className="mobile-field">
           <Text className="mobile-field__label">Plan / Patient Education</Text>
-          <Form.Item name={planPath} style={{ marginBottom: 0 }}>
+          <Form.Item name={planPath} style={{ marginBottom: 0 }} help={null}>
             <Checkbox.Group className="plan-group">
               {row.planOptions.map((item, index) => (
                 <Checkbox
@@ -178,7 +227,12 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
       </td>
 
       <td className="current-status-cell">
-        <Form.Item name={statusPath} style={{ marginBottom: 0 }}>
+        <Form.Item
+          name={statusPath}
+          style={{ marginBottom: 0 }}
+          rules={createLifestyleStatusRules(form)}
+          {...getSilentValidationProps(showEmptyValidation)}
+        >
           <Radio.Group
             className="current-status-group ant-status-group"
             style={{
@@ -204,7 +258,7 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
       </td>
 
       <td className="barrier-cell">
-        <Form.Item name={barrierPath} style={{ marginBottom: 0 }}>
+        <Form.Item name={barrierPath} style={{ marginBottom: 0 }} help={null}>
           <div className="barrier-field-wrap">
             <TextArea
               className="barrier-textarea"
@@ -221,7 +275,7 @@ function LifestyleAssessmentRow({ row, form, mobile = false }) {
       </td>
 
       <td>
-        <Form.Item name={planPath} style={{ marginBottom: 0 }}>
+        <Form.Item name={planPath} style={{ marginBottom: 0 }} help={null}>
           <Checkbox.Group className="plan-group">
             {row.planOptions.map((item, index) => (
               <Checkbox

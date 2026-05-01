@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './index.css'
 import { lifestyleAssessmentData } from '../../data/lifestyleAssessmentData'
 import LifestyleAssessmentRow from '../../components/LifestyleAssessmentRow'
@@ -15,20 +16,58 @@ import { DEFAULT_LIFESTYLE_HISTORY_CONTEXT } from '../../features/lifestyleHisto
 
 const { Title, Text } = Typography
 
-function formatSubmittedAssessment(values) {
+function getOptionId(options, selectedOption) {
+  const optionIndex = options.indexOf(selectedOption)
+  return optionIndex >= 0 ? optionIndex + 1 : ''
+}
+
+function getSelectedOptionIds(options, selectedOptions) {
+  const selectedList = Array.isArray(selectedOptions) ? selectedOptions : []
+
+  return selectedList
+    .map((selectedOption) => getOptionId(options, selectedOption))
+    .filter((optionId) => optionId !== '')
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== ''
+}
+
+function formatLifestyleAssessmentJson(values) {
   const assessment = values?.assessment || {}
 
-  return lifestyleAssessmentData.map((row) => {
-    const rowData = assessment[row.id] || {}
+  return {
+    assessments: lifestyleAssessmentData
+      .map((row) => {
+        const rowData = assessment[row.id] || {}
+        const statusOptions = row.statusOptions || []
+        const planOptions = row.planOptions || []
+        const selectedStatus = rowData.status || ''
+        const currentStatus = String(getOptionId(statusOptions, selectedStatus))
 
-    return {
-      id: row.id,
-      riskModifier: row.riskModifier,
-      status: rowData.status || '',
-      barrier: rowData.barrier || '',
-      plan: Array.isArray(rowData.plan) ? rowData.plan : [],
-    }
-  })
+        if (!isNonEmptyString(currentStatus)) {
+          return null
+        }
+
+        const payload = {
+          risk_modifier_id: row.id,
+          current_status: currentStatus,
+        }
+
+        if (isNonEmptyString(rowData.barrier)) {
+          payload.barrier_identified = rowData.barrier.trim()
+        }
+
+        const planOptionIds = getSelectedOptionIds(planOptions, rowData.plan)
+
+        if (planOptionIds.length > 0) {
+          payload.plan_options = planOptionIds
+        }
+
+        return payload
+      })
+      .filter(Boolean),
+  }
 }
 
 function hasAnyAssessmentValue(values) {
@@ -49,8 +88,20 @@ function hasAnyAssessmentValue(values) {
   })
 }
 
-function LifestyleandRiskAssessment() {
+function getFirstValidationMessage(errorInfo) {
+  const firstError = errorInfo?.errorFields?.find(
+    (field) => Array.isArray(field.errors) && field.errors.length > 0,
+  )
+
+  return firstError?.errors?.[0] || 'Please fill the form.'
+}
+
+function LifestyleandRiskAssessment({
+  lifestyleHistoryRecords = [],
+  setLifestyleHistoryRecords,
+}) {
   const [form] = Form.useForm()
+  const [showEmptyValidation, setShowEmptyValidation] = useState(false)
 
   const {
     records,
@@ -62,30 +113,47 @@ function LifestyleandRiskAssessment() {
     importRecord,
     openView,
     backToHistoryFromView,
-  } = useLifestyleHistory(DEFAULT_LIFESTYLE_HISTORY_CONTEXT)
+  } = useLifestyleHistory(DEFAULT_LIFESTYLE_HISTORY_CONTEXT, {
+    // Keeps lifestyle history above this route so navigation does not clear it.
+    records: lifestyleHistoryRecords,
+    setRecords: setLifestyleHistoryRecords,
+  })
+
+  const handleValuesChange = (_, allValues) => {
+    if (hasAnyAssessmentValue(allValues)) {
+      setShowEmptyValidation(false)
+    }
+  }
 
   const handleFinish = (values) => {
     if (!hasAnyAssessmentValue(values)) {
-      message.warning('Please fill the form')
+      setShowEmptyValidation(true)
+      message.warning('Please fill the form.')
       return
     }
 
-    const submittedRecord = addRecord(values)
+    addRecord(values)
+
+    const formattedAssessmentJson = formatLifestyleAssessmentJson(values)
 
     console.log(
       'Lifestyle and Risk Assessment Submitted JSON:',
-      JSON.stringify(
-        {
-          record: submittedRecord,
-          assessment: formatSubmittedAssessment(values),
-        },
-        null,
-        2,
-      ),
+      JSON.stringify(formattedAssessmentJson, null, 2),
     )
 
     message.success('Data submitted successfully')
+    setShowEmptyValidation(false)
     form.resetFields()
+  }
+
+  const handleFinishFailed = (errorInfo) => {
+    const validationMessage = getFirstValidationMessage(errorInfo)
+
+    if (validationMessage === 'Please fill the form.') {
+      setShowEmptyValidation(true)
+    }
+
+    message.warning(validationMessage)
   }
 
   return (
@@ -96,7 +164,9 @@ function LifestyleandRiskAssessment() {
         <Form
           form={form}
           layout="vertical"
+          onValuesChange={handleValuesChange}
           onFinish={handleFinish}
+          onFinishFailed={handleFinishFailed}
           className="assessment-form"
         >
           <div className="assessment-card">
@@ -134,7 +204,12 @@ function LifestyleandRiskAssessment() {
 
                 <tbody>
                   {lifestyleAssessmentData.map((row) => (
-                    <LifestyleAssessmentRow key={row.id} row={row} form={form} />
+                    <LifestyleAssessmentRow
+                      key={row.id}
+                      row={row}
+                      form={form}
+                      showEmptyValidation={showEmptyValidation}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -147,6 +222,7 @@ function LifestyleandRiskAssessment() {
                   row={row}
                   form={form}
                   mobile
+                  showEmptyValidation={showEmptyValidation}
                 />
               ))}
             </div>

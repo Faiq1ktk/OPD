@@ -13,10 +13,21 @@ function useVisitHistory({
   autoPlanDependencies,
   enteredBy,
   messageApi,
+  visitHistoryRecords,
+  setVisitHistoryRecords,
 }) {
   const [isVisitHistoryOpen, setIsVisitHistoryOpen] = useState(false)
-  const [visitHistoryRecords, setVisitHistoryRecords] = useState([])
+  const [internalVisitHistoryRecords, setInternalVisitHistoryRecords] = useState([])
   const [viewRecord, setViewRecord] = useState(null)
+
+  const records = Array.isArray(visitHistoryRecords)
+    ? visitHistoryRecords
+    : internalVisitHistoryRecords
+
+  const updateRecords =
+    typeof setVisitHistoryRecords === 'function'
+      ? setVisitHistoryRecords
+      : setInternalVisitHistoryRecords
 
   const openVisitHistory = () => setIsVisitHistoryOpen(true)
   const closeVisitHistory = () => setIsVisitHistoryOpen(false)
@@ -26,18 +37,18 @@ function useVisitHistory({
     setViewRecord(null)
     setIsVisitHistoryOpen(true)
   }
-   
 
   const addVisitHistoryRecord = (values) => {
     const record = createVisitHistoryRecord(values, enteredBy)
-    
-  // Backend integration note:
-  // Right now, this record is only saved in React state (frontend memory).
-  // Later, this same record should also be sent to the backend database.
-  // Example:
-  // await api.createPostIschemicVisit(record)
 
-    setVisitHistoryRecords((previousRecords) => [record, ...previousRecords])
+    // Backend integration note:
+    // Right now, this record is saved in React state above the route level.
+    // It survives route navigation, but it still clears on browser refresh.
+    // Later, this same record should also be sent to the backend database.
+    // Example:
+    // await api.createPostIschemicVisit(record)
+
+    updateRecords((previousRecords) => [record, ...previousRecords])
     return record
   }
 
@@ -72,7 +83,7 @@ function useVisitHistory({
 
   return {
     isVisitHistoryOpen,
-    visitHistoryRecords,
+    visitHistoryRecords: records,
     viewRecord,
     openVisitHistory,
     closeVisitHistory,
